@@ -1,0 +1,527 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Fitness Coach - Enhanced</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        .header {
+            background-color: #007bff;
+            color: white;
+            padding: 1em;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 {
+            margin: 0;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1em;
+        }
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: white;
+        }
+        .logout-btn {
+            background-color: #dc3545;
+            color: white;
+            padding: 0.5em 1em;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .logout-btn:hover {
+            background-color: #c82333;
+        }
+        .main-content {
+            display: flex;
+            flex-grow: 1;
+            overflow: hidden;
+        }
+        .dashboard {
+            width: 350px;
+            background-color: #f8f9fa;
+            padding: 1em;
+            border-right: 1px solid #ddd;
+            overflow-y: auto;
+        }
+        .dashboard h2 {
+            color: #007bff;
+            margin-top: 0;
+        }
+        .stat-item {
+            margin-bottom: 1em;
+        }
+        .stat-item label {
+            font-weight: bold;
+        }
+        .progress-bar-container {
+            background-color: #e9ecef;
+            border-radius: 5px;
+            height: 10px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            background-color: #28a745;
+            width: 0%;
+            border-radius: 5px;
+            transition: width 0.5s ease-in-out;
+        }
+        .sync-section {
+            margin-top: 2em;
+            border-top: 1px solid #eee;
+            padding-top: 1em;
+        }
+        .sync-section h3 {
+            color: #007bff;
+        }
+        .sync-button {
+            background-color: #17a2b8;
+            color: white;
+            padding: 0.7em 1.5em;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+            margin-top: 1em;
+            width: 100%;
+        }
+        .sync-button:hover {
+            background-color: #138496;
+        }
+        .sync-link-container {
+            background-color: #e9ecef;
+            padding: 1em;
+            border-radius: 4px;
+            margin-top: 1em;
+            word-break: break-all;
+        }
+        .chat-area {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .chat-container {
+            flex-grow: 1;
+            padding: 1em;
+            overflow-y: auto;
+            background-color: #fff;
+            border-bottom: 1px solid #ddd;
+        }
+        .message {
+            margin-bottom: 1em;
+            padding: 0.5em 1em;
+            border-radius: 8px;
+            max-width: 70%;
+        }
+        .user-message {
+            background-color: #dcf8c6;
+            align-self: flex-end;
+            margin-left: auto;
+        }
+        .ai-message {
+            background-color: #e0e0e0;
+            align-self: flex-start;
+            margin-right: auto;
+        }
+        .input-container {
+            display: flex;
+            padding: 1em;
+            background-color: #eee;
+            border-top: 1px solid #ddd;
+            align-items: center;
+        }
+        .input-container input[type="text"] {
+            flex-grow: 1;
+            padding: 0.8em;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-right: 1em;
+            font-size: 1em;
+        }
+        .input-container button {
+            background-color: #007bff;
+            color: white;
+            padding: 0.8em 1.5em;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1em;
+            margin-left: 0.5em;
+        }
+        .input-container button:hover {
+            background-color: #0056b3;
+        }
+        .input-container .icon-button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.5em;
+            margin: 0 0.5em;
+            color: #555;
+        }
+        .input-container .icon-button:hover {
+            color: #000;
+        }
+        .input-container .icon-button.active {
+            color: #007bff;
+        }
+        .input-container input[type="file"] {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>AI Fitness Coach</h1>
+        <div class="user-info">
+            <span id="user-name"></span>
+            <a href="/logout" class="logout-btn">Logout</a>
+        </div>
+    </div>
+    <div class="main-content">
+        <div class="dashboard">
+            <h2>Fitness Dashboard</h2>
+            <div class="stat-item">
+                <label>Steps:</label>
+                <span id="steps-value">0</span>
+                <div class="progress-bar-container"><div class="progress-bar" id="steps-progress"></div></div>
+            </div>
+            <div class="stat-item">
+                <label>Calories Burned:</label>
+                <span id="calories-value">0</span>
+                <div class="progress-bar-container"><div class="progress-bar" id="calories-progress"></div></div>
+            </div>
+            <div class="stat-item">
+                <label>Heart Rate:</label>
+                <span id="heart-rate-value">0</span> bpm
+            </div>
+            <div class="stat-item">
+                <label>Macros:</label>
+                <span id="macros-value">P:0g C:0g F:0g</span>
+            </div>
+
+            <div class="sync-section">
+                <h3>Apple Health Sync</h3>
+                <button class="sync-button" id="show-apple-health-sync-button">How to Sync</button>
+                <div class="sync-link-container" id="apple-health-sync-link-container" style="display:none;">
+                    <p>Your personal sync link:</p>
+                    <p><code id="personal-apple-health-sync-link">Loading...</code></p>
+                    <h4>Instructions:</h4>
+                    <h5>Using iOS Shortcuts:</h5>
+                    <p>1. Open the Shortcuts app on your iPhone.</p>
+                    <p>2. Create a new Personal Automation (e.g., triggered daily at midnight).</p>
+                    <p>3. Add an action: "Get Health Samples" (for Steps, Active Energy, Heart Rate).</p>
+                    <p>4. Add an action: "Get Contents of URL".</p>
+                    <p>5. Set the URL to your personal sync link above.</p>
+                    <p>6. Set the method to POST.</p>
+                    <p>7. Set the Request Body to JSON and add parameters like `steps`, `calories_burned`, `heart_rate` (using the Health Sample variables).</p>
+                    <p>8. Disable "Ask Before Running".</p>
+                    <h5>Using Health Auto Export:</h5>
+                    <p>1. Download the Health Auto Export app from the App Store.</p>
+                    <p>2. In the app, go to "Exports" and create a new custom export.</p>
+                    <p>3. Configure the data you want to export (Steps, Active Energy, Heart Rate, etc.).</p>
+                    <p>4. Set the export destination to "Webhook".</p>
+                    <p>5. Paste your personal sync link into the Webhook URL field.</p>
+                    <p>6. Configure the export frequency (e.g., daily).</p>
+                </div>
+            </div>
+
+            <div class="sync-section">
+                <h3>StepsApp Sync</h3>
+                <button class="sync-button" id="show-stepsapp-sync-button">Свържи StepsApp</button>
+                <div class="sync-link-container" id="stepsapp-sync-link-container" style="display:none;">
+                    <p>Your personal StepsApp sync link:</p>
+                    <p><code id="personal-stepsapp-sync-link">Loading...</code></p>
+                    <h4>Instructions:</h4>
+                    <p>1. In StepsApp, go to Settings > Integrations > Webhook.</p>
+                    <p>2. Paste your personal StepsApp sync link above into the Webhook URL field.</p>
+                    <p>3. Configure the data to send (Steps, Calories).</p>
+                    <p>4. Ensure the method is POST and the content type is JSON.</p>
+                </div>
+            </div>
+        </div>
+        <div class="chat-area">
+            <div class="chat-container" id="chat-container"></div>
+            <div class="input-container">
+                <button class="icon-button" id="voice-input-button"><span id="voice-icon">🎤</span></button>
+                <input type="text" id="user-input" placeholder="Ask your fitness coach...">
+                <label for="image-upload" class="icon-button">📸</label>
+                <input type="file" id="image-upload" accept="image/*">
+                <button onclick="sendMessage()">Send</button>
+                <button class="icon-button" id="voice-output-toggle">🔊</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentUserId = "";
+        let currentUsername = "";
+        let mediaRecorder;
+        let audioChunks = [];
+        let isRecording = false;
+        let voiceOutputEnabled = false;
+
+        async function loadUserInfo() {
+            try {
+                const response = await fetch("/api/user");
+                if (response.ok) {
+                    const user = await response.json();
+                    currentUserId = user.user_id;
+                    currentUsername = user.username; 
+                    document.getElementById("user-name").textContent = user.name || user.user_id;
+                    document.getElementById("personal-apple-health-sync-link").textContent = `${window.location.origin}/api/sync/applehealth/${currentUserId}`;
+                    document.getElementById("personal-stepsapp-sync-link").textContent = `${window.location.origin}/api/sync/stepsapp/${currentUsername}`;
+                    loadChatHistory();
+                } else {
+                    window.location.href = "/login";
+                }
+            } catch (error) {
+                console.error("Error loading user info:", error);
+            }
+        }
+
+        async function loadChatHistory() {
+            try {
+                const response = await fetch("/api/chat_history");
+                if (response.ok) {
+                    const history = await response.json();
+                    const chatContainer = document.getElementById("chat-container");
+                    chatContainer.innerHTML = "::::"; // Clear existing messages
+                    history.forEach(entry => {
+                        const messageDiv = document.createElement("div");
+                        messageDiv.classList.add("message", entry.role === "user" ? "user-message" : "ai-message");
+                        messageDiv.textContent = entry.parts[0];
+                        chatContainer.appendChild(messageDiv);
+                    });
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                }
+            } catch (error) {
+                console.error("Error loading chat history:", error);
+            }
+        }
+
+        async function updateDashboard() {
+            if (!currentUserId) return; 
+            try {
+                const response = await fetch("/api/fitness_stats");
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById("steps-value").textContent = data.steps;
+                    document.getElementById("calories-value").textContent = data.calories_burned;
+                    document.getElementById("heart-rate-value").textContent = data.heart_rate;
+                    document.getElementById("macros-value").textContent = `P:${data.macros.protein}g C:${data.macros.carbs}g F:${data.macros.fat}g`;
+
+                    const stepsTarget = 10000;
+                    const caloriesTarget = 500;
+
+                    const stepsProgress = (data.steps / stepsTarget) * 100;
+                    document.getElementById("steps-progress").style.width = `${Math.min(stepsProgress, 100)}%`;
+
+                    const caloriesProgress = (data.calories_burned / caloriesTarget) * 100;
+                    document.getElementById("calories-progress").style.width = `${Math.min(caloriesProgress, 100)}%`;
+
+                } else if (response.status === 404) {
+                    console.log("No fitness data yet for this user.");
+                }
+            } catch (error) {
+                console.error("Error updating dashboard:", error);
+            }
+        }
+
+        async function sendMessage(message = null, isVoice = false, isImage = false) {
+            const userInput = document.getElementById("user-input");
+            const chatContainer = document.getElementById("chat-container");
+            
+            let messageToSend = message || userInput.value.trim();
+            if (messageToSend === "" && !isImage) return;
+
+            const userMessageDiv = document.createElement("div");
+            userMessageDiv.classList.add("message", "user-message");
+            userMessageDiv.textContent = messageToSend;
+            chatContainer.appendChild(userMessageDiv);
+
+            userInput.value = "";
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+
+            try {
+                let responseData;
+                if (isImage) {
+                    const imageFile = document.getElementById("image-upload").files[0];
+                    if (!imageFile) return;
+
+                    const formData = new FormData();
+                    formData.append("image", imageFile);
+
+                    const response = await fetch("/api/upload_image", {
+                        method: "POST",
+                        body: formData,
+                    });
+                    responseData = await response.json();
+                    if (responseData.analysis) {
+                        messageToSend = `Image uploaded for analysis: ${responseData.analysis}`;
+                    }
+                } else {
+                    const response = await fetch("/chat", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({ message: messageToSend }),
+                    });
+                    responseData = await response.json();
+                }
+
+                const aiMessageDiv = document.createElement("div");
+                aiMessageDiv.classList.add("message", "ai-message");
+                aiMessageDiv.textContent = responseData.response || responseData.analysis || responseData.error || "Error getting response";
+                chatContainer.appendChild(aiMessageDiv);
+
+                if (voiceOutputEnabled && responseData.response) {
+                    playVoiceOutput(responseData.response);
+                }
+
+                if (responseData.stats_updated) {
+                    updateDashboard();
+                }
+
+            } catch (error) {
+                console.error("Error:", error);
+                const errorMessageDiv = document.createElement("div");
+                errorMessageDiv.classList.add("message", "ai-message");
+                errorMessageDiv.textContent = "Error: Could not get a response from the AI.";
+                chatContainer.appendChild(errorMessageDiv);
+            }
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        async function playVoiceOutput(text) {
+            try {
+                const response = await fetch("/api/text_to_speech", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ text: text, lang: "bg" }), // Assuming Bulgarian for AI response
+                });
+                const data = await response.json();
+                if (data.audio) {
+                    const audio = new Audio("data:audio/mp3;base64," + data.audio);
+                    audio.play();
+                } else if (data.error) {
+                    console.error("Error playing voice output:", data.error);
+                }
+            } catch (error) {
+                console.error("Error playing voice output:", error);
+            }
+        }
+
+        document.getElementById("user-input").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                sendMessage();
+            }
+        });
+
+        document.getElementById("show-apple-health-sync-button").addEventListener("click", function() {
+            const syncLinkContainer = document.getElementById("apple-health-sync-link-container");
+            if (syncLinkContainer.style.display === "none") {
+                syncLinkContainer.style.display = "block";
+                this.textContent = "Hide Sync Instructions";
+            } else {
+                syncLinkContainer.style.display = "none";
+                this.textContent = "How to Sync";
+            }
+        });
+
+        document.getElementById("show-stepsapp-sync-button").addEventListener("click", function() {
+            const syncLinkContainer = document.getElementById("stepsapp-sync-link-container");
+            if (syncLinkContainer.style.display === "none") {
+                syncLinkContainer.style.display = "block";
+                this.textContent = "Скрий инструкции";
+            } else {
+                syncLinkContainer.style.display = "none";
+                this.textContent = "Свържи StepsApp";
+            }
+        });
+
+        document.getElementById("voice-input-button").addEventListener("click", async () => {
+            const voiceIcon = document.getElementById("voice-icon");
+            if (!isRecording) {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    mediaRecorder = new MediaRecorder(stream);
+                    mediaRecorder.ondataavailable = (event) => {
+                        audioChunks.push(event.data);
+                    };
+                    mediaRecorder.onstop = async () => {
+                        const audioBlob = new Blob(audioChunks, { type: "audio/wav" });
+                        audioChunks = [];
+                        
+                        const formData = new FormData();
+                        formData.append("audio", audioBlob, "recording.wav");
+
+                        const response = await fetch("/api/transcribe", {
+                            method: "POST",
+                            body: formData,
+                        });
+                        const data = await response.json();
+                        if (data.transcription) {
+                            sendMessage(data.transcription, true);
+                        } else if (data.error) {
+                            console.error("Transcription error:", data.error);
+                            alert("Error transcribing audio: " + data.error);
+                        }
+                    };
+                    mediaRecorder.start();
+                    voiceIcon.textContent = "🔴"; // Recording indicator
+                    isRecording = true;
+                } catch (error) {
+                    console.error("Error accessing microphone:", error);
+                    alert("Error accessing microphone. Please ensure it's connected and permissions are granted.");
+                }
+            } else {
+                mediaRecorder.stop();
+                voiceIcon.textContent = "🎤";
+                isRecording = false;
+            }
+        });
+
+        document.getElementById("image-upload").addEventListener("change", function() {
+            if (this.files.length > 0) {
+                sendMessage(null, false, true);
+            }
+        });
+
+        document.getElementById("voice-output-toggle").addEventListener("click", function() {
+            voiceOutputEnabled = !voiceOutputEnabled;
+            this.classList.toggle("active", voiceOutputEnabled);
+            alert(`Voice output ${voiceOutputEnabled ? "enabled" : "disabled"}`);
+        });
+
+        loadUserInfo();
+        const dashboardInterval = setInterval(() => {
+            if (currentUserId) {
+                updateDashboard();
+            }
+        }, 5000);
+        window.addEventListener("beforeunload", () => clearInterval(dashboardInterval));
+    </script>
+</body>
+</html>

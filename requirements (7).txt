@@ -1,0 +1,6 @@
+Flask
+google-generativeai
+replit
+werkzeug
+gTTS
+requests
